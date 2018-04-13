@@ -1,0 +1,47 @@
+version: '2'
+services:
+
+  postgres-exporter:
+    container_name: postgres-exporter
+    image: wrouesnel/postgres_exporter
+    environment:
+      - DATA_SOURCE_URI=postgres:5432/rutherford?sslmode=disable
+      - DATA_SOURCE_USER=$POSTGRES_DB_USER
+      - DATA_SOURCE_PASS=$POSTGRES_DB_PASSWORD
+
+  # elasticsearch-exporter:
+  #   container_name: elasticsearch-exporter
+  #   image: justwatch/elasticsearch_exporter:1.0.2
+  #   command:
+  #    - '-es.uri=http://elasticsearch:9200'
+  #   extra_hosts:
+  #     - elasticsearch:$LOCAL_ELASTICSEARCH
+  # kafka-exporter:
+  #   container_name: kafka-exporter
+  #   image: danielqsj/kafka-exporter
+  #   command:
+  #    - '--web.listen-address=:9422'
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=$GRAFANA_ADMIN_USER
+      - GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD
+      - GF_DATABASE_TYPE=sqlite3
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_AUTH_BASIC_ENABLED=false
+    volumes:
+      - /var/lib/grafana:/var/lib/grafana
+    ports:
+      - 3000:3000
+
+networks:
+  default:
+    external:
+      name: isaac
