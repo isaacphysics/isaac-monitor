@@ -30,7 +30,7 @@ def generate_template_context(running_containers):
 
         elif 'pg' in container['name']:
             postgres_containers = template_context.setdefault('postgres_containers', {})
-            environmnet = container['name'].split('-')[1]
+            environment = container['name'].split('-')[1]
             container['exporter_name'] = container['name'] + exporter_suffix
             container['prometheus_job_name'] = container['exporter_name'].replace('-', '_')
             postgres_containers[environment] = container
@@ -38,7 +38,7 @@ def generate_template_context(running_containers):
         elif 'api' in container['name']:
             # TODO MT currently only handles one container in every environment
             api_containers = template_context.setdefault('isaac_api_containers', {})
-            environmnet = container['name'].split('-')[1]
+            environment = container['name'].split('-')[1]
             container['exporter_name'] = container['name'] + exporter_suffix
             container['prometheus_job_name'] = container['exporter_name'].replace('-', '_')
             api_containers[environment] = container
