@@ -1,0 +1,59 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  {% for api_environment in isaac_api_containers %}
+  {% if loop.first %}# isaac api{% endif %}
+  # - {{isaac_api_containers[api_environment].name}}
+  - job_name: '{{isaac_api_containers[api_environment].name}}_exporter'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['{{isaac_api_containers[api_environment].name}}:9966']
+  {%- endfor %}  
+  
+  {% for postgres_environment in postgres_containers %}
+  {% if loop.first %}# postgres{% endif %}
+  {%- if postgres_environment is equalto 'live' %}
+  # - postgres live
+  - job_name: 'postgres_exporter_isaac_3'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['postgres-exporter-isaac-3:9187']
+
+  - job_name: 'postgres_exporter_isaac_2'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['postgres-exporter-isaac-2:9187']
+  {%- else %}
+  # - postgres {{ postgres_environment }}
+  - job_name: '{{postgres_containers[postgres_environment].name}}-exporter'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['{{postgres_containers[postgres_environment].name}}-exporter:9187']
+  {%- endif %}
+  {%- endfor %}
+
+  
+  # elastic
+  elasticsearch-exporter-isaac-3:
+    container_name: elasticsearch-exporter-isaac-3
+    image: justwatch/elasticsearch_exporter:1.0.2
+    extra_hosts:
+      - elasticsearch:$LOCAL_ELASTICSEARCH
+    command:
+      - '-es.uri=http://elasticsearch:9200'
+
+  elasticsearch-exporter-isaac-2:
+    container_name: elasticsearch-exporter-isaac-2
+    image: justwatch/elasticsearch_exporter:1.0.2
+    extra_hosts:
+      - remote-elasticsearch:$REMOTE_ELASTICSEARCH
+    command:
+      - '-es.uri=http://remote-elasticsearch:9200'
+
+
+  # prometheus
+  - job_name: 'prometheus_exporter'
+    static_configs:
+      - targets: ['localhost:9090']
