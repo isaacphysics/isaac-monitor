@@ -50,7 +50,7 @@ services:
       - --web.enable-lifecycle
       - --storage.tsdb.retention=90d
       - --storage.tsdb.path=/prometheus/data
-      - --config.file=/prometheus/prometheus.yml
+      - --config.file=/etc/prometheus/prometheus.yml
     volumes:
       - ./{{prometheus_config_path}}:/etc/prometheus/prometheus.yml
       - /var/lib/prometheus:/prometheus/data
