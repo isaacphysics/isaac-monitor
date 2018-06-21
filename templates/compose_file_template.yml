@@ -1,37 +1,30 @@
 version: '2'
 services:
-  {% for postgres_environment in postgres_containers %}
-  {% if loop.first %}# postgres{% endif %}
-  {%- if postgres_environment is equalto 'live' %}
-  postgres-exporter-isaac-3:
-    container_name: postgres-exporter-isaac-3
+  # Postgres
+  {% macro postgres_container(postgres_host_name, exporter_name, port=5432, metrics_path='/metrics', extra_host=None) -%}
+  {{ exporter_name }}:
+    container_name: {{ exporter_name }}
     image: wrouesnel/postgres_exporter
-    environment:
-      - DATA_SOURCE_URI=postgres:5432/rutherford?sslmode=disable
-      - DATA_SOURCE_USER=$POSTGRES_DB_USER
-      - DATA_SOURCE_PASS=$POSTGRES_DB_PASSWORD
-
-  postgres-exporter-isaac-2:
-    container_name: postgres-exporter-isaac-2
-    image: wrouesnel/postgres_exporter
+    {% if extra_host -%}
     extra_hosts:
-      - remote-postgres:$REMOTE_POSTGRES
+      - {{ extra_host}}
+    {% endif -%}
     environment:
-      - DATA_SOURCE_URI=remote-postgres:5432/rutherford?sslmode=disable
+      - DATA_SOURCE_URI={{ postgres_host_name }}:{{ port }}/rutherford?sslmode=disable
       - DATA_SOURCE_USER=$POSTGRES_DB_USER
       - DATA_SOURCE_PASS=$POSTGRES_DB_PASSWORD
+  {% endmacro -%}
+
+  {%- for postgres_environment, container in postgres_containers.iteritems() %}
+  {%- if postgres_environment is equalto 'live' %}
+  {{ postgres_container(postgres_host_name='postgres', exporter_name=container.exporter_name + '-isaac-3') }}
+  {{ postgres_container(postgres_host_name='remote-postgres', exporter_name=container.exporter_name + '-isaac-2', extra_host='remote-postgres:$REMOTE_POSTGRES') }}
   {%- else %}
-  {{postgres_containers[postgres_environment].name}}-exporter:
-    container_name: {{postgres_containers[postgres_environment].name}}-exporter
-    image: wrouesnel/postgres_exporter
-    environment:
-      - DATA_SOURCE_URI={{postgres_containers[postgres_environment].name}}:5432/rutherford?sslmode=disable
-      - DATA_SOURCE_USER=$POSTGRES_DB_USER
-      - DATA_SOURCE_PASS=$POSTGRES_DB_PASSWORD
+  {{ postgres_container(postgres_host_name=container.name, exporter_name=container.exporter_name) }}
   {%- endif %}
   {%- endfor %}
 
-  # elastic
+  # Elastic
   elasticsearch-exporter-isaac-3:
     container_name: elasticsearch-exporter-isaac-3
     image: justwatch/elasticsearch_exporter:1.0.2
@@ -48,17 +41,21 @@ services:
     command:
       - '-es.uri=http://remote-elasticsearch:9200'
 
-  # metrics collating and querying
+
+  # Metrics Collating and Querying
   prometheus:
     container_name: prometheus
     image: prom/prometheus
     command:
+      - --web.enable-lifecycle
       - --storage.tsdb.retention=90d
       - --storage.tsdb.path=/prometheus/data
       - --config.file=/prometheus/prometheus.yml
     volumes:
       - ./{{prometheus_config_path}}:/etc/prometheus/prometheus.yml
       - /var/lib/prometheus:/prometheus/data
+    ports:
+      - 9090:9090
 
   grafana:
     container_name: grafana
@@ -73,6 +70,7 @@ services:
       - /var/lib/grafana:/var/lib/grafana
     ports:
       - 3000:3000
+
 
 networks:
   default:
