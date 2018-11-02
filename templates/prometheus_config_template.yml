@@ -11,11 +11,14 @@ global:
 
 scrape_configs:
   # Isaac API
+  {%- if isaac_api_containers -%}
   {%- for api_environment, container in isaac_api_containers.iteritems() -%}
   {{ prometheus_job(container.prometheus_job_name, container.exporter_name, 9966) }}
   {% endfor %}
+  {%- endif %}
 
   # Postgres
+  {%- if postgres_containers -%}
   {%- for postgres_environment, container in postgres_containers.iteritems() -%}
   {% if postgres_environment is equalto 'live' -%}
   {{ prometheus_job(container.prometheus_job_name + '_isaac_3', container.exporter_name + '-isaac-3', 9187) }}
@@ -24,6 +27,7 @@ scrape_configs:
   {{ prometheus_job(container.prometheus_job_name, container.exporter_name, 9187) }}
   {%- endif %}
   {%- endfor %}
+  {%- endif %}
 
 
   # Elastic

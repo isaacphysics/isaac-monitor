@@ -15,6 +15,7 @@ services:
   {% endmacro -%}
 
   # Postgres
+  {%- if postgres_containers -%}
   {%- for postgres_environment, container in postgres_containers.iteritems() %}
   {%- if postgres_environment is equalto 'live' %}
   {{ postgres_container(postgres_host_name='postgres', exporter_name=container.exporter_name + '-isaac-3') }}
@@ -23,6 +24,7 @@ services:
   {{ postgres_container(postgres_host_name=container.name, exporter_name=container.exporter_name) }}
   {%- endif %}
   {%- endfor %}
+  {%- endif %}
 
   # Elastic
   elasticsearch-exporter-isaac-3:
