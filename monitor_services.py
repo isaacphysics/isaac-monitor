@@ -9,7 +9,6 @@ from pprint import pprint
 
 compose_file_path = 'generated_compose_file.yml'
 prometheus_config_path = 'generated_prometheus_config.yml'
-verbose = False
 
 templates = jinja2.Environment(loader=jinja2.FileSystemLoader('templates'), autoescape=None)
 compose_file_template = templates.get_template('compose_file_template.yml')
@@ -81,21 +80,18 @@ def reload_prometheus_config(**kwargs):
 
 
 def parse_command_line_arguments():
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description='Automate monitoring containers and prometheus targets.')
     parser.add_argument('--target-environments', '--environments', '-e', nargs='+', choices=['test', 'dev', 'staging', 'live'], help='limit monitoring to specific environments')
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('--generate', action='store_true', help='generate compose and prometheus files only')
     group.add_argument('--reload', action='store_true', help='reload prometheus config only')
     group.add_argument('--clean', action='store_true', help='clean-up old monitor containers')
     group.add_argument('--compose', nargs='*', help='passes following arguments through to docker-compose')
-    parser.add_argument('--verbose', '-v', action='store_true', help='verbose output')
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     cli_args = parse_command_line_arguments()
-    if cli_args.verbose:
-        print("TODO add useful info for verbose output!")
 
     running_containers = discover_running_containers()
     template_context = generate_template_context(running_containers, cli_args.target_environments)
