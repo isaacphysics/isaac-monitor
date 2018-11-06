@@ -31,7 +31,7 @@ services:
     container_name: elasticsearch-exporter-isaac-3
     image: justwatch/elasticsearch_exporter:1.0.2
     extra_hosts:
-      - elasticsearch:$LOCAL_ELASTICSEARCH
+      - elasticsearch:$LOCAL_ELASTICSEARCH_IP
     command:
       - '-es.uri=http://elasticsearch:9200'
 
@@ -39,7 +39,7 @@ services:
     container_name: elasticsearch-exporter-isaac-2
     image: justwatch/elasticsearch_exporter:1.0.2
     extra_hosts:
-      - remote-elasticsearch:$REMOTE_ELASTICSEARCH
+      - remote-elasticsearch:$REMOTE_ELASTICSEARCH_IP
     command:
       - '-es.uri=http://remote-elasticsearch:9200'
 
