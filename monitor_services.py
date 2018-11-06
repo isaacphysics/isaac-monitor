@@ -25,6 +25,7 @@ def report_execution(function):
         value = function(*args, **kwargs)
         print('')
         return value
+    wrapper.func_name = function.func_name # for useful argparse message set func_name to the wrapped function's func_name
     return wrapper
 
 @report_execution
@@ -80,7 +81,8 @@ def docker_compose(compose_file_path, compose_args=['up', '-d'], **kwargs):
 
 @report_execution
 def clean_up_old_containers(template_context, **kwargs):
-    pass # TODO MT implement if we want it
+    print('NOTE: Clean up old containers is not implemented.')
+    print('Skipping...')
 
 @report_execution
 def generate_prometheus_config(prometheus_config_path, template_context, **kwargs):
@@ -95,26 +97,30 @@ def reload_prometheus_config(**kwargs):
         raise Exception('Error: The reload request to Prometheus was not successfull ({} : {})'.format(response.status_code, response.reason))
 
 
-def parse_command_line_arguments():
+def parse_command_line_arguments(all_actions):
     parser = argparse.ArgumentParser(description='Automate monitoring containers and prometheus targets.')
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--all', action='store_true', help='run all actions: [{}]'.format(', '.join(action.func_name for action in all_actions)))
+    group.add_argument('--generate', action='store_true', help='generate compose and prometheus files only')
+    group.add_argument('--compose', nargs='*', help='runs docker-compose with the trailing arguments on the generated compose file')
+    group.add_argument('--clean', action='store_true', help='clean-up old monitor containers')
+    group.add_argument('--reload', action='store_true', help='reload prometheus config only')
     parser.add_argument('--target-environments', '--environments', '-e', nargs='+', choices=['test', 'dev', 'staging', 'live'], help='limit monitoring to specific environments')
     parser.add_argument('--no-prompt', action="store_true", help='diable action prompts')
-    group = parser.add_mutually_exclusive_group(required=False)
-    group.add_argument('--generate', action='store_true', help='generate compose and prometheus files only')
-    group.add_argument('--reload', action='store_true', help='reload prometheus config only')
-    group.add_argument('--clean', action='store_true', help='clean-up old monitor containers')
-    group.add_argument('--compose', nargs='*', help='passes following arguments through to docker-compose')
     return parser.parse_args()
 
 
 if __name__ == '__main__':
-    cli_args = parse_command_line_arguments()
+    all_actions = [generate_compose_file, docker_compose, clean_up_old_containers, generate_prometheus_config, reload_prometheus_config]
+    cli_args = parse_command_line_arguments(all_actions)
     no_prompt = cli_args.no_prompt
     running_containers = discover_running_containers()
     template_context = generate_template_context(running_containers, cli_args.target_environments)
     action_args = {'template_context': template_context, 'compose_file_path': compose_file_path, 'prometheus_config_path': prometheus_config_path}
 
-    actions = [generate_compose_file, docker_compose, clean_up_old_containers, generate_prometheus_config, reload_prometheus_config]
+    actions = []
+    if cli_args.all:
+        actions = all_actions
     if cli_args.generate:
         actions = [generate_compose_file, generate_prometheus_config]
     if cli_args.reload:
