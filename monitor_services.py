@@ -110,14 +110,15 @@ def parse_command_line_arguments(all_actions):
 
 
 if __name__ == '__main__':
-    if not sys.stdout.isatty():
-        print("\nError: Must run this method with a tty. If you're using windows try:")
-        print("winpty {}".format(' '.join(sys.argv)))
-        sys.exit(1)
-
     all_actions = [generate_compose_file, docker_compose, clean_up_old_containers, generate_prometheus_config, reload_prometheus_config]
     cli_args = parse_command_line_arguments(all_actions)
     no_prompt = cli_args.no_prompt
+
+    if not no_prompt and not sys.stdout.isatty():
+        print("\nError: Must run this method with a tty unless you specify --no-prompt. If you're using windows try:")
+        print("winpty {}".format(' '.join(sys.argv)))
+        sys.exit(1)
+
     running_containers = discover_running_containers()
     template_context = generate_template_context(running_containers, cli_args.target_environments)
     action_args = {'template_context': template_context, 'compose_file_path': compose_file_path, 'prometheus_config_path': prometheus_config_path}
