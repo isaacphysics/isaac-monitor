@@ -33,7 +33,7 @@ def discover_running_containers():
     properties = {'id':'{{.ID}}', 'name':'{{.Names}}', 'image':'{{.Image}}'}
     docker_ps_output = subprocess.check_output(['docker', 'ps', '--format', '\t'.join(properties.values())])
     running_containers = [dict(zip(properties.keys(), container_details.split('\t'))) for container_details in docker_ps_output.split('\n')[:-1]]
-    print("{} running containers found:\n{}".format(len(running_containers), [container['name'] for container in running_containers]))
+    print("Found {} running containers:\n{}".format(len(running_containers), [container['name'] for container in running_containers]))
     return running_containers
 
 def generate_template_context(running_containers, target_environments):
@@ -77,7 +77,7 @@ def generate_compose_file(compose_file_path, template_context, **kwargs):
 def docker_compose(compose_file_path, compose_args=['up', '-d'], **kwargs):
     docker_compose_exit_code = subprocess.call(['docker-compose', '-f', compose_file_path] + compose_args)
     if docker_compose_exit_code:
-        raise Exception('Docker compose exited with a non zero status')
+        raise Exception('Docker compose exited with a non zero status: {}'.format(docker_compose_exit_code))
 
 @report_execution
 def clean_up_old_containers(template_context, **kwargs):
@@ -96,7 +96,6 @@ def reload_prometheus_config(**kwargs):
     if not response.ok:
         raise Exception('Error: The reload request to Prometheus was not successfull ({} : {})'.format(response.status_code, response.reason))
 
-
 def parse_command_line_arguments(all_actions):
     parser = argparse.ArgumentParser(description='Automate monitoring containers and prometheus targets.')
     group = parser.add_mutually_exclusive_group(required=True)
@@ -111,6 +110,11 @@ def parse_command_line_arguments(all_actions):
 
 
 if __name__ == '__main__':
+    if not sys.stdout.isatty():
+        print("\nError: Must run this method with a tty. If you're using windows try:")
+        print("winpty {}".format(' '.join(sys.argv)))
+        sys.exit(1)
+
     all_actions = [generate_compose_file, docker_compose, clean_up_old_containers, generate_prometheus_config, reload_prometheus_config]
     cli_args = parse_command_line_arguments(all_actions)
     no_prompt = cli_args.no_prompt
