@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import functools
 import jinja2
 import requests
 import subprocess
@@ -16,24 +17,21 @@ compose_file_template = templates.get_template('compose_file_template.yml')
 prometheus_config_template = templates.get_template('prometheus_config_template.yml')
 
 def report_execution(function):
-    def wrapper(*args, **kwargs):
+    @functools.wraps(function)
+    def decorated_function(*args, **kwargs):
         if no_prompt:
             print('[{}]'.format(function.func_name.upper()))
-        elif raw_input('About to {}, continue (y/n)?\n>'.format(function.func_name.replace('_', ' '))).lower() != 'y':
+        elif raw_input('\nAbout to {}, continue (y/n)?\n>'.format(function.func_name.replace('_', ' '))).lower() != 'y':
             print('Aborting execution')
             sys.exit(1)
-        value = function(*args, **kwargs)
-        print('')
-        return value
-    wrapper.func_name = function.func_name # for useful argparse message set func_name to the wrapped function's func_name
-    return wrapper
+        return function(*args, **kwargs)
+    return decorated_function
 
-@report_execution
 def discover_running_containers():
     properties = {'id':'{{.ID}}', 'name':'{{.Names}}', 'image':'{{.Image}}'}
     docker_ps_output = subprocess.check_output(['docker', 'ps', '--format', '\t'.join(properties.values())])
     running_containers = [dict(zip(properties.keys(), container_details.split('\t'))) for container_details in docker_ps_output.split('\n')[:-1]]
-    print("Found {} running containers:\n{}".format(len(running_containers), [container['name'] for container in running_containers]))
+    print("Found {} running containers:\n{}".format(len(running_containers), sorted(container['name'] for container in running_containers)))
     return running_containers
 
 def generate_template_context(running_containers, target_environments):
@@ -105,7 +103,7 @@ def parse_command_line_arguments(all_actions):
     group.add_argument('--clean', action='store_true', help='clean-up old monitor containers')
     group.add_argument('--reload', action='store_true', help='reload prometheus config only')
     parser.add_argument('--target-environments', '--environments', '-e', nargs='+', choices=['test', 'dev', 'staging', 'live'], help='limit monitoring to specific environments')
-    parser.add_argument('--no-prompt', action="store_true", help='diable action prompts')
+    parser.add_argument('--no-prompt', action="store_true", help='disable action prompts')
     return parser.parse_args()
 
 
