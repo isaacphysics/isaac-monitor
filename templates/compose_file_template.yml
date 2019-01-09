@@ -69,7 +69,7 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=false
       - GF_AUTH_BASIC_ENABLED=false
     volumes:
-      - /var/lib/grafana:/var/lib/grafana
+      - grafana-storage:/var/lib/grafana
     ports:
       - 3000:3000
 
@@ -78,3 +78,6 @@ networks:
   default:
     external:
       name: isaac
+volumes:
+  grafana-storage:
+    external: true
