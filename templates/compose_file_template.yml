@@ -63,15 +63,18 @@ services:
     container_name: grafana
     image: grafana/grafana
     environment:
+      - GF_SERVER_DOMAIN=monitor.isaacphysics.org
+      - GF_SERVER_ROOT_URL=https://%(domain)s/
       - GF_SECURITY_ADMIN_USER=$GRAFANA_ADMIN_USER
       - GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD
       - GF_DATABASE_TYPE=sqlite3
       - GF_AUTH_ANONYMOUS_ENABLED=false
       - GF_AUTH_BASIC_ENABLED=false
       - GF_SMTP_ENABLED=true
-      - GF_SMTP_HOST=$LOCAL_SMTP
+      - GF_SMTP_HOST=$LOCAL_SMTP:25
       - GF_SMTP_SKIP_VERIFY=true
       - GF_SMTP_FROM_ADDRESS=monitor@isaacphysics.org
+      - GF_SMTP_FROM_NAME=Isaac Monitor
     volumes:
       - grafana-storage:/var/lib/grafana
     ports:
