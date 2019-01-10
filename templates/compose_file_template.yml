@@ -68,6 +68,10 @@ services:
       - GF_DATABASE_TYPE=sqlite3
       - GF_AUTH_ANONYMOUS_ENABLED=false
       - GF_AUTH_BASIC_ENABLED=false
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_HOST=$LOCAL_SMTP
+      - GF_SMTP_SKIP_VERIFY=true
+      - GF_SMTP_FROM_ADDRESS=monitor@isaacphysics.org
     volumes:
       - grafana-storage:/var/lib/grafana
     ports:
