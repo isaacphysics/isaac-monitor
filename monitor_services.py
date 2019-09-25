@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import argparse
@@ -23,15 +23,14 @@ def report_execution(function):
 
 def discover_running_containers():
     properties = {'id':'{{.ID}}', 'name':'{{.Names}}', 'image':'{{.Image}}'}
-    print(['docker', 'ps', '--format', '\t'.join(properties.values())])
-    docker_ps_output = str(subprocess.check_output(['docker', 'ps', '--format', '\t'.join(list(properties.values()))]))
-    running_containers = [dict(zip(properties.keys(), container_details.split('\t'))) for container_details in docker_ps_output.split("\n")[:-1]]
-    print("Found {} running containers:\n{}".format(len(running_containers), sorted(container['name'] for container in running_containers)))
+    docker_ps_output = str(subprocess.check_output(['docker', 'ps', '--format', '\t'.join(properties.values())]))
+    running_containers = []
+    for container_details in docker_ps_output.split('\\n')[:-1]:
+        running_containers.append(dict(zip(properties.keys(), container_details.split('\\t'))))
+    print('Found {} running containers:\n{}'.format(len(running_containers), sorted(container['name'] for container in running_containers)))
     return running_containers
 
 def generate_template_context(running_containers, target_environments):
-    # {'service_name': {'environment_name': {...container_details...}}} when environment is important
-    # {'service_name': [{...container_details...}, ...]} when environment is not important
     exporter_suffix = '-exporter'
 
     template_context = {}
@@ -39,7 +38,7 @@ def generate_template_context(running_containers, target_environments):
         if 'exporter' in container['name']:
             template_context.setdefault('exporter_containers', []).append(container)
         elif 'api' in container['name']:
-            subject, environment, container_type, tag = container['name'].split('-')
+            subject, container_type, environment, tag = container['name'].split('-')
             if not target_environments or environment in target_environments:
                 container['exporter_name'] = container['name'] # container exposes a port
                 container['prometheus_job_name'] = container['exporter_name'].replace('-', '_')
@@ -83,7 +82,7 @@ def clean_up_old_containers(template_context, **kwargs):
 def generate_prometheus_config(prometheus_config_path, template_context, **kwargs):
     with open(prometheus_config_path, 'w') as file_handle:
         file_handle.write(prometheus_config_template.render(template_context))
-        print("Prometheus config generated and written to " + prometheus_config_path)
+        print('Prometheus config generated and written to ' + prometheus_config_path)
 
 @report_execution
 def reload_prometheus_config(**kwargs):
@@ -117,8 +116,8 @@ if __name__ == '__main__':
     no_prompt = cli_args.no_prompt
 
     if not no_prompt and not sys.stdout.isatty():
-        print("\nError: Must run this method with a tty unless you specify --no-prompt. If you're using windows try:")
-        print("winpty {}".format(' '.join(sys.argv)))
+        print('\nError: Must run this method with a tty unless you specify --no-prompt. If you\'re using windows try:')
+        print('winpty {}'.format(' '.join(sys.argv)))
         sys.exit(1)
 
     running_containers = discover_running_containers()

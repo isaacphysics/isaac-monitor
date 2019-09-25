@@ -11,15 +11,15 @@ global:
 
 scrape_configs:
   # Isaac API
-  {%- if isaac_api_containers -%}
+  {% if isaac_api_containers -%}
   {%- for subject, subject_containers in isaac_api_containers.items() -%}
   # {{subject.upper()}}
   {%- for environment, environment_containers in subject_containers.items() -%}
   {%- for tag, container in environment_containers.items() -%}
   {{ prometheus_job(container.prometheus_job_name, container.exporter_name, 9966) }}
   {% endfor %}
-  {% endfor %}
-  {% endfor %}
+  {%- endfor %}
+  {%- endfor %}
   {%- endif %}
 
   # Postgres
