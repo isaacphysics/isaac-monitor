@@ -1,6 +1,6 @@
 version: '2'
 services:
-  {% macro postgres_container(postgres_host_name, exporter_name, port=5432, metrics_path='/metrics', extra_host=None) -%}
+  {% macro postgres_container(subject, postgres_host_name, exporter_name, port=5432, metrics_path='/metrics', extra_host=None) -%}
   {{ exporter_name }}:
     container_name: {{ exporter_name }}
     image: wrouesnel/postgres_exporter
@@ -11,38 +11,40 @@ services:
     environment:
       - DATA_SOURCE_URI={{ postgres_host_name }}:{{ port }}/rutherford?sslmode=disable
       - DATA_SOURCE_USER=$POSTGRES_DB_USER
-      - DATA_SOURCE_PASS=$POSTGRES_DB_PASSWORD
+      - DATA_SOURCE_PASS=${{subject.upper()}}_POSTGRES_PASSWORD
   {% endmacro -%}
 
   # Postgres
   {%- if postgres_containers -%}
-  {%- for postgres_environment, container in postgres_containers.iteritems() %}
+  {%- for subject, subject_containers in postgres_containers.items() %}
+  # {{ subject.upper() }}
+  {%- for postgres_environment, container in subject_containers.items() %}
   {%- if postgres_environment is equalto 'live' %}
-  {{ postgres_container(postgres_host_name='postgres', exporter_name=container.exporter_name + '-isaac-3') }}
-  {{ postgres_container(postgres_host_name='remote-postgres', exporter_name=container.exporter_name + '-isaac-2', extra_host='remote-postgres:$REMOTE_POSTGRES') }}
+  {{ postgres_container(subject, postgres_host_name='postgres', exporter_name=container.exporter_name + '-isaac-1') }}
+  {{ postgres_container(subject, postgres_host_name='remote-postgres', exporter_name=container.exporter_name + '-isaac-2', extra_host='remote-postgres:$REMOTE_{{subect.upper()}}_POSTGRES') }}
   {%- else %}
-  {{ postgres_container(postgres_host_name=container.name, exporter_name=container.exporter_name) }}
+  {{ postgres_container(subject, postgres_host_name=container.name, exporter_name=container.exporter_name) }}
   {%- endif %}
+  {%- endfor %}
   {%- endfor %}
   {%- endif %}
 
-  # Elastic
-  elasticsearch-exporter-isaac-3:
-    container_name: elasticsearch-exporter-isaac-3
-    image: justwatch/elasticsearch_exporter:1.0.2
-    extra_hosts:
-      - elasticsearch:$LOCAL_ELASTICSEARCH_IP
-    command:
-      - '-es.uri=http://elasticsearch:9200'
-
-  elasticsearch-exporter-isaac-2:
-    container_name: elasticsearch-exporter-isaac-2
-    image: justwatch/elasticsearch_exporter:1.0.2
-    extra_hosts:
-      - remote-elasticsearch:$REMOTE_ELASTICSEARCH_IP
-    command:
-      - '-es.uri=http://remote-elasticsearch:9200'
-
+#  # Elastic
+#  elasticsearch-exporter-isaac-3:
+#    container_name: elasticsearch-exporter-isaac-3
+#    image: justwatch/elasticsearch_exporter:1.0.2
+#    extra_hosts:
+#      - elasticsearch:$LOCAL_ELASTICSEARCH_IP
+#    command:
+#      - '-es.uri=http://elasticsearch:9200'
+#
+#  elasticsearch-exporter-isaac-2:
+#    container_name: elasticsearch-exporter-isaac-2
+#    image: justwatch/elasticsearch_exporter:1.0.2
+#    extra_hosts:
+#      - remote-elasticsearch:$REMOTE_ELASTICSEARCH_IP
+#    command:
+#      - '-es.uri=http://remote-elasticsearch:9200'
 
   # Metrics Collating and Querying
   prometheus:
@@ -55,7 +57,7 @@ services:
       - --config.file=/etc/prometheus/prometheus.yml
     volumes:
       - ./{{prometheus_config_path}}:/etc/prometheus/prometheus.yml
-      - /var/lib/prometheus:/prometheus/data
+      - prometheus-storage:/prometheus/data
     ports:
       - 9090:9090
 
@@ -73,11 +75,12 @@ services:
     ports:
       - 3000:3000
 
-
 networks:
   default:
     external:
       name: isaac
 volumes:
+  prometheus-storage:
+    external: true
   grafana-storage:
     external: true
