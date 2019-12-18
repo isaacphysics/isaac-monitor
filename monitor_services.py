@@ -86,9 +86,9 @@ def generate_prometheus_config(prometheus_config_path, template_context, **kwarg
 
 @report_execution
 def reload_prometheus_config(**kwargs):
-    response = requests.post('http://localhost:9090/-/reload')
-    if not response.ok:
-        raise Exception('Error: The reload request to Prometheus was not successfull ({} : {})'.format(response.status_code, response.reason))
+    docker_reload_exit_code = subprocess.call(['docker', 'kill', '--signal=HUP', 'prometheus'])
+    if docker_reload_exit_code:
+        raise Exception('Error: The reload request to Prometheus was not successfull: {}'.format(docker_reload_exit_code))
 
 def parse_command_line_arguments(all_actions):
     parser = argparse.ArgumentParser(description='Automate monitoring containers and prometheus targets.')
