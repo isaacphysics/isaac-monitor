@@ -38,7 +38,8 @@ def generate_template_context(running_containers, target_environments):
         if 'exporter' in container['name']:
             template_context.setdefault('exporter_containers', []).append(container)
         elif 'api' in container['name']:
-            subject, container_type, environment, tag = container['name'].split('-')
+            subject, container_type, environment, *tag_parts = container['name'].split('-')
+            tag = "-".join(tag_parts)
             if not target_environments or environment in target_environments:
                 container['exporter_name'] = container['name'] # container exposes a port
                 container['prometheus_job_name'] = container['exporter_name'].replace('-', '_')
