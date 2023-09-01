@@ -21,7 +21,7 @@ services:
   {%- for postgres_environment, container in subject_containers.items() %}
   {%- if postgres_environment is equalto 'live' %}
   {{ postgres_container(subject, postgres_host_name=container.name, exporter_name=container.exporter_name + '-isaac-1') }}
-  {{ postgres_container(subject, postgres_host_name='remote-'+container.name, exporter_name=container.exporter_name + '-isaac-2', extra_host='remote-'+container.name+':$REMOTE_'+subject.upper()+'_POSTGRES_IP') }}
+  {{ postgres_container(subject, postgres_host_name='remote-'+container.name, exporter_name=container.exporter_name + '-isaac-3', extra_host='remote-'+container.name+':$REMOTE_'+subject.upper()+'_POSTGRES_IP') }}
   {%- else %}
   {{ postgres_container(subject, postgres_host_name=container.name, exporter_name=container.exporter_name) }}
   {%- endif %}
