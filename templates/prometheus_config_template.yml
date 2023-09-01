@@ -21,3 +21,18 @@ scrape_configs:
   {%- endfor %}
   {%- endfor %}
   {%- endif %}
+
+
+  {%- if postgres_containers -%}
+  {%- for subject, subject_containers in postgres_containers.items() -%}
+  # {{subject.upper()}}
+  {%- for environment, container in subject_containers.items() -%}
+  {% if environment is equalto 'live' -%}
+  {{ prometheus_job(container.prometheus_job_name + '_isaac_1', container.exporter_name + '-isaac-1', 9187) }}
+  {{ prometheus_job(container.prometheus_job_name + '_isaac_2', container.exporter_name + '-isaac-2', 9187) }}
+  {%- else %}
+  {{ prometheus_job(container.prometheus_job_name, container.exporter_name, 9187) }}
+  {%- endif %}
+  {%- endfor %}
+  {%- endfor %}
+  {%- endif %}
