@@ -54,9 +54,9 @@ services:
       - --web.enable-lifecycle
       - --storage.tsdb.retention.time=90d
       - --storage.tsdb.path=/prometheus/data
-      - --config.file=/etc/prometheus/prometheus.yml
+      - --config.file=/etc/prometheus/prometheus.yaml
     volumes:
-      - ./{{prometheus_config_path}}:/etc/prometheus/prometheus.yml
+      - ./{{prometheus_config_path}}:/etc/prometheus/prometheus.yaml
       - prometheus-storage:/prometheus/data
 
   grafana:
