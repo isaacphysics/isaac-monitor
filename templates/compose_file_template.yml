@@ -1,4 +1,3 @@
-version: '2'
 services:
   {% macro postgres_container(subject, postgres_host_name, exporter_name, port=5432, metrics_path='/metrics', extra_host=None) -%}
   {{ exporter_name }}:
