@@ -55,6 +55,14 @@ def generate_template_context(running_containers, target_environments):
                 postgres_containers = template_context.setdefault('postgres_containers', {})
                 subject_containers = postgres_containers.setdefault(subject, {})
                 subject_containers[environment] = container
+        elif 'elasticsearch' in container['name']:
+            subject, container_type, version, environment = container['name'].split('-')
+            if not target_environments or environment in target_environments:
+                container['exporter_name'] = container['name'] + exporter_suffix
+                container['prometheus_job_name'] = container['exporter_name'].replace('-', '_')
+                elasticsearch_containers = template_context.setdefault('elasticsearch_containers', {})
+                subject_containers = elasticsearch_containers.setdefault(subject, {})
+                subject_containers[environment] = container
         else:
             template_context.setdefault('other_containers', []).append(container)
 

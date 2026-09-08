@@ -28,14 +28,29 @@ services:
   {%- endfor %}
   {%- endif %}
 
-  # Elasticsearch
-  elasticsearch-exporter:
-   container_name: prom-elasticsearch-exporter
-   image: prometheuscommunity/elasticsearch-exporter:v1.7.0
+  {% macro elasticsearch_container(exporter_name) -%}
+  {{ exporter_name }}:
+    container_name: {{ exporter_name }}
+    image: prometheuscommunity/elasticsearch-exporter:v1.7.0
    extra_hosts:
      - elasticsearch:$LOCAL_ELASTICSEARCH_IP
    command:
      - '-es.uri=http://elasticsearch:9200'
+  {% endmacro -%}
+
+  # Elasticsearch
+  {%- if elasticsearch_containers -%}
+  {%- for subject, subject_containers in elasticsearch_containers.items() %}
+  # {{ subject.upper() }}
+  {%- for elasticsearch_environment, container in subject_containers.items() %}
+  {%- if elasticsearch_environment is equalto 'live' %}
+  {{ elasticsearch_container(exporter_name='prom-' + container.exporter_name) }}
+  {%- else %}
+  {{ elasticsearch_container(exporter_name=container.exporter_name) }}
+  {%- endif %}
+  {%- endfor %}
+  {%- endfor %}
+  {%- endif %}
 
   # Metrics Collating and Querying
   prometheus:
