@@ -43,3 +43,10 @@ scrape_configs:
   {%- endfor %}
   {%- endfor %}
   {%- endif %}
+
+  # Nginx
+  {%- if router_container -%}
+  {%- for container in router_container -%}
+  {{ prometheus_job(container.prometheus_job_name, 'prom-' + container.exporter_name, 9113) }}
+  {%- endfor %}
+  {%- endif %}

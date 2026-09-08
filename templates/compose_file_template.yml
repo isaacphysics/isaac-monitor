@@ -52,6 +52,14 @@ services:
   {%- endfor %}
   {%- endif %}
 
+  # Nginx
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.5.3
+    container_name: prom-isaac-router-exporter
+    command:
+      - '--nginx.scrape-uri=http://nginx:8087/stub_status'
+      - '--web.listen-address=:9113'
+
   # Metrics Collating and Querying
   prometheus:
     container_name: prometheus

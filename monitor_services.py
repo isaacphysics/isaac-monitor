@@ -63,6 +63,10 @@ def generate_template_context(running_containers, target_environments):
                 elasticsearch_containers = template_context.setdefault('elasticsearch_containers', {})
                 subject_containers = elasticsearch_containers.setdefault(subject, {})
                 subject_containers[environment] = container
+        elif 'isaac-router' == container['name']:
+            container['exporter_name'] = container['name'] + exporter_suffix
+            container['prometheus_job_name'] = container['exporter_name'].replace('-', '_')
+            template_context.setdefault('router_container', []).append(container)
         else:
             template_context.setdefault('other_containers', []).append(container)
 
