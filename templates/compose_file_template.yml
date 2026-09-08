@@ -30,16 +30,16 @@ services:
 
 #  # Elastic
 #  elasticsearch-exporter-isaac-3:
-#    container_name: elasticsearch-exporter-isaac-3
-#    image: justwatch/elasticsearch_exporter:1.0.2
+#    container_name: prom-elasticsearch-exporter-isaac-3
+#    image: prometheuscommunity/elasticsearch-exporter:v1.7.0
 #    extra_hosts:
 #      - elasticsearch:$LOCAL_ELASTICSEARCH_IP
 #    command:
 #      - '-es.uri=http://elasticsearch:9200'
 #
 #  elasticsearch-exporter-isaac-2:
-#    container_name: elasticsearch-exporter-isaac-2
-#    image: justwatch/elasticsearch_exporter:1.0.2
+#    container_name: prom-elasticsearch-exporter-isaac-2
+#    image: prometheuscommunity/elasticsearch-exporter:v1.7.0
 #    extra_hosts:
 #      - remote-elasticsearch:$REMOTE_ELASTICSEARCH_IP
 #    command:
