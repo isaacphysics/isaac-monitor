@@ -55,7 +55,7 @@ def generate_template_context(running_containers, target_environments):
                 postgres_containers = template_context.setdefault('postgres_containers', {})
                 subject_containers = postgres_containers.setdefault(subject, {})
                 subject_containers[environment] = container
-        elif 'elasticsearch' in container['name']:
+        elif 'elasticsearch' in container['name'] and 'voter' not in container['name']:
             subject, container_type, version, environment = container['name'].split('-')
             if not target_environments or environment in target_environments:
                 container['exporter_name'] = container['name'] + exporter_suffix
