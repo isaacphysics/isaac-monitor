@@ -67,6 +67,9 @@ def generate_template_context(running_containers, target_environments):
             container['exporter_name'] = container['name'] + exporter_suffix
             container['prometheus_job_name'] = container['exporter_name'].replace('-', '_')
             template_context.setdefault('router_container', []).append(container)
+        elif 'isaac-loadbalancer' == container['name']:
+            # this doesn't need a separate exporter, just record whether the container exists
+            template_context.setdefault('loadbalancer_container', True)
         else:
             template_context.setdefault('other_containers', []).append(container)
 

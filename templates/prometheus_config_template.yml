@@ -50,3 +50,8 @@ scrape_configs:
   {{ prometheus_job(container.prometheus_job_name, 'prom-' + container.exporter_name, 9113) }}
   {%- endfor %}
   {%- endif %}
+
+  # HAProxy
+  {%- if loadbalancer_container -%}
+  {{ prometheus_job('haproxy_exporter', 'isaac-loadbalancer', 8405) }}
+  {%- endif %}
