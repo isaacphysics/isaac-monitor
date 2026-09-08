@@ -19,11 +19,7 @@ services:
   {%- for subject, subject_containers in postgres_containers.items() %}
   # {{ subject.upper() }}
   {%- for postgres_environment, container in subject_containers.items() %}
-  {%- if postgres_environment is equalto 'live' %}
   {{ postgres_container(subject, postgres_host_name=container.name, exporter_name='prom-' + container.exporter_name) }}
-  {%- else %}
-  {{ postgres_container(subject, postgres_host_name=container.name, exporter_name=container.exporter_name) }}
-  {%- endif %}
   {%- endfor %}
   {%- endfor %}
   {%- endif %}
@@ -32,10 +28,10 @@ services:
   {{ exporter_name }}:
     container_name: {{ exporter_name }}
     image: prometheuscommunity/elasticsearch-exporter:v1.7.0
-   extra_hosts:
-     - elasticsearch:$LOCAL_ELASTICSEARCH_IP
-   command:
-     - '-es.uri=http://elasticsearch:9200'
+    extra_hosts:
+      - elasticsearch:$LOCAL_ELASTICSEARCH_IP
+    command:
+      - '-es.uri=http://elasticsearch:9200'
   {% endmacro -%}
 
   # Elasticsearch
