@@ -30,7 +30,7 @@ services:
     extra_hosts:
       - elasticsearch:$LOCAL_ELASTICSEARCH_IP
     command:
-      - '-es.uri=http://elasticsearch:9200'
+      - '--es.uri=http://elasticsearch:9200'
   {% endmacro -%}
 
   # Elasticsearch
