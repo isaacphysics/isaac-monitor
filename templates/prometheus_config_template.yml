@@ -29,7 +29,6 @@ scrape_configs:
   # {{subject.upper()}}
   {%- for environment, container in subject_containers.items() -%}
   {{ prometheus_job(container.prometheus_job_name, 'prom-' + container.exporter_name, 9187) }}
-  {%- endif %}
   {%- endfor %}
   {%- endfor %}
   {%- endif %}
@@ -41,7 +40,6 @@ scrape_configs:
   # {{subject.upper()}}
   {%- for environment, container in subject_containers.items() -%}
   {{ prometheus_job(container.prometheus_job_name, 'prom-' + container.exporter_name, 9108) }}
-  {%- endif %}
   {%- endfor %}
   {%- endfor %}
   {%- endif %}
