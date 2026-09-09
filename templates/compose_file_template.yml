@@ -30,7 +30,7 @@ services:
     extra_hosts:
       - elasticsearch:$LOCAL_{{subject.upper}}_ELASTICSEARCH_V9_IP
     command:
-      - '--es.uri=http://elastic:${{{subject.upper()}}_ELASTIC_PASSWORD}@elasticsearch:9200'
+      - '--es.uri=http://elastic:${{subject.upper()}}_ELASTIC_PASSWORD@elasticsearch:9200'
   {% endmacro -%}
 
   # Elasticsearch
