@@ -8,7 +8,7 @@ services:
       - {{ extra_host}}
     {% endif -%}
     environment:
-      - DATA_SOURCE_URI={{ postgres_host_name }}:{{ port }}/rutherford?sslmode=disable
+      - DATA_SOURCE_URI={{ postgres_host_name }}:{{ port }}/rutherford
       - DATA_SOURCE_USER=$POSTGRES_DB_USER
       - DATA_SOURCE_PASS=${{subject.upper()}}_POSTGRES_PASSWORD
   {% endmacro -%}
