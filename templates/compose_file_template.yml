@@ -23,12 +23,12 @@ services:
   {%- endfor %}
   {%- endif %}
 
-  {% macro elasticsearch_container(exporter_name) -%}
+  {% macro elasticsearch_container(subject, exporter_name) -%}
   {{ exporter_name }}:
     container_name: {{ exporter_name }}
     image: prometheuscommunity/elasticsearch-exporter:v1.7.0
     extra_hosts:
-      - elasticsearch:$LOCAL_ELASTICSEARCH_IP
+      - elasticsearch:$LOCAL_{{subject.upper}}_ELASTICSEARCH_V9_IP
     command:
       - '--es.uri=http://elasticsearch:9200'
   {% endmacro -%}
@@ -39,7 +39,7 @@ services:
   # {{ subject.upper() }}
   {%- for elasticsearch_environment, container in subject_containers.items() %}
   {%- if elasticsearch_environment is equalto 'live' %}
-  {{ elasticsearch_container(exporter_name='prom-' + container.exporter_name) }}
+  {{ elasticsearch_container(subject, exporter_name='prom-' + container.exporter_name) }}
   {%- else %}
   {{ elasticsearch_container(exporter_name=container.exporter_name) }}
   {%- endif %}
