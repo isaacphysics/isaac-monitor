@@ -55,6 +55,21 @@ def generate_template_context(running_containers, target_environments):
                 postgres_containers = template_context.setdefault('postgres_containers', {})
                 subject_containers = postgres_containers.setdefault(subject, {})
                 subject_containers[environment] = container
+        elif 'elasticsearch' in container['name'] and 'voter' not in container['name']:
+            subject, container_type, version, environment = container['name'].split('-')
+            if not target_environments or environment in target_environments:
+                container['exporter_name'] = container['name'] + exporter_suffix
+                container['prometheus_job_name'] = container['exporter_name'].replace('-', '_')
+                elasticsearch_containers = template_context.setdefault('elasticsearch_containers', {})
+                subject_containers = elasticsearch_containers.setdefault(subject, {})
+                subject_containers[environment] = container
+        elif 'isaac-router' == container['name']:
+            container['exporter_name'] = container['name'] + exporter_suffix
+            container['prometheus_job_name'] = container['exporter_name'].replace('-', '_')
+            template_context.setdefault('router_container', []).append(container)
+        elif 'isaac-loadbalancer' == container['name']:
+            # this doesn't need a separate exporter, just record whether the container exists
+            template_context.setdefault('loadbalancer_container', True)
         else:
             template_context.setdefault('other_containers', []).append(container)
 
