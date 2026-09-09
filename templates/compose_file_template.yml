@@ -2,7 +2,7 @@ services:
   {% macro postgres_container(subject, postgres_host_name, exporter_name, port=5432, metrics_path='/metrics', extra_host=None) -%}
   {{ exporter_name }}:
     container_name: {{ exporter_name }}
-    image: prometheuscommunity/postgres-exporter:v0.20.1
+    image: prometheuscommunity/postgres-exporter
     {% if extra_host -%}
     extra_hosts:
       - {{ extra_host}}
@@ -26,7 +26,7 @@ services:
   {% macro elasticsearch_container(subject, exporter_name) -%}
   {{ exporter_name }}:
     container_name: {{ exporter_name }}
-    image: prometheuscommunity/elasticsearch-exporter:v1.7.0
+    image: prometheuscommunity/elasticsearch-exporter
     extra_hosts:
       - elasticsearch:$LOCAL_{{subject.upper()}}_ELASTICSEARCH_V9_IP
     command:
@@ -49,7 +49,7 @@ services:
 
   # Nginx
   nginx-exporter:
-    image: nginx/nginx-prometheus-exporter:1.5.3
+    image: nginx/nginx-prometheus-exporter
     container_name: prom-isaac-router-exporter
     command:
       - '--nginx.scrape-uri=http://isaac-router:8080/nginx-status-page'
@@ -58,7 +58,7 @@ services:
   # Metrics Collating and Querying
   prometheus:
     container_name: prometheus
-    image: prom/prometheus
+    image: prom/prometheus:v3.14.0
     command:
       - --web.enable-lifecycle
       - --storage.tsdb.retention.time=90d
@@ -70,7 +70,7 @@ services:
 
   grafana:
     container_name: grafana
-    image: grafana/grafana
+    image: grafana/grafana:13.2.1
     environment:
       - GF_SERVER_DOMAIN=monitor.isaacphysics.org
       - GF_SERVER_ROOT_URL=https://%(domain)s/
